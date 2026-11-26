@@ -94,10 +94,36 @@ local function HandleSlash(msg)
         CAS.ToggleUI()
     elseif cmd == "overlaps" or cmd == "conflicts" then
         CAS.ToggleUI("overlaps")
-    elseif cmd == "tools" then
+    elseif cmd == "tools" or cmd == "profiles" then
         CAS.ToggleUI("tools")
     elseif cmd == "soft" or cmd == "softtarget" then
         CAS.ToggleUI("softtarget")
+    elseif cmd == "camera" or cmd == "actioncam" then
+        CAS.ToggleUI("camera")
+    elseif cmd == "export" then
+        if CAS.ShowExportImportDialog then
+            CAS.ShowExportImportDialog("export")
+        end
+    elseif cmd == "import" then
+        if CAS.ShowExportImportDialog then
+            CAS.ShowExportImportDialog("import")
+        end
+    elseif cmd == "boss" or cmd == "addboss" then
+        local ok, res = CAS.AddTargetBossID()
+        if ok then
+            CAS.Print("Registered custom boss: |cffffd200" .. tostring(res) .. "|r")
+            CAS.RefreshUI()
+        else
+            CAS.Print("|cffff5533[Boss ID]|r " .. tostring(res))
+        end
+    elseif cmd == "undo" then
+        local ok, lbl, restored = CAS.PopAndUndo()
+        if ok then
+            CAS.Print(string.format("Undid '|cffffd200%s|r' (%d CVar(s) restored).", tostring(lbl), restored))
+            CAS.RefreshUI()
+        else
+            CAS.Print("Nothing to undo.")
+        end
     elseif cmd == "status" then
         PrintStatus()
     elseif cmd == "scan" then
@@ -117,7 +143,7 @@ local function HandleSlash(msg)
         traceEnabled = not traceEnabled
         CAS.Print("Debug trace: " .. (traceEnabled and "|cff44ff44ON|r" or "|cffff5555OFF|r"))
     else
-        CAS.Print("Commands: /capi | /capi overlaps | /capi soft | /capi tools | /capi status | /capi scan | /capi minimap | /capi resetpos | /capi trace")
+        CAS.Print("Commands: /capi | /capi camera | /capi soft | /capi overlaps | /capi tools | /capi export | /capi import | /capi addboss | /capi status | /capi scan | /capi minimap | /capi resetpos | /capi trace")
     end
 end
 
@@ -129,12 +155,18 @@ SlashCmdList["CLASSICAPISETTINGS"] = HandleSlash
 -- Event Driver
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
+eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 eventFrame:RegisterEvent("CVAR_UPDATE")
 
 eventFrame:SetScript("OnEvent", function()
     if event == "PLAYER_LOGIN" then
         InitDB()
         CAS.DetectMods()
+        CAS.InitialScriptProfile = CAS.SafeGetCVar("scriptProfile") or "0"
+        local bossCount = CAS.ApplySavedBossIDs()
+        if bossCount > 0 then
+            CAS.Trace("Re-registered " .. tostring(bossCount) .. " custom boss creature ID(s).")
+        end
         CAS.ScanOverlaps()
         CAS.UpdateMinimapButton()
         CAS.Trace("PLAYER_LOGIN complete.")
@@ -149,6 +181,10 @@ eventFrame:SetScript("OnEvent", function()
             if high > 0 or warn > 0 then
                 CAS.Print(string.format("Found %d HIGH and %d WARN cross-mod overlap(s). Type |cffffd200/capi overlaps|r to review.", high, warn))
             end
+        end
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        if CAS.CheckAutoSwitchProfile then
+            CAS.CheckAutoSwitchProfile(false)
         end
     elseif event == "CVAR_UPDATE" then
         CAS.Trace("CVAR_UPDATE: " .. tostring(arg1) .. " = " .. tostring(arg2))

@@ -443,6 +443,24 @@ function CAS.ScanOverlaps()
         )
     end
 
+    -- 15. Soft Interact enabled without INTERACTTARGET key binding
+    if (softInteract == "2" or softInteract == "3") and type(GetBindingKey) == "function" then
+        local k1 = GetBindingKey("INTERACTTARGET")
+        if not k1 then
+            AddOverlap(
+                "WARN",
+                "softinteract_no_keybind",
+                "Soft Interact enabled without 'Interact With Target' keybind",
+                "SoftTargetInteract is active, but INTERACTTARGET has no key bound yet. Bind a key under Key Bindings -> Targeting Functions -> Interact With Target.",
+                { "SoftTargetInteract" },
+                "Open Key Bindings",
+                function()
+                    if CAS.OpenKeyBindings then CAS.OpenKeyBindings() end
+                end
+            )
+        end
+    end
+
     return CAS.Overlaps
 end
 

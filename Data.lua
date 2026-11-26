@@ -32,6 +32,14 @@ CAS.Tabs = {
         id = "general",
         title = "General",
         items = {
+            {
+                kind = "bindings_bar",
+                label = "Focus Keybinds",
+                bindings = {
+                    { action = "FOCUSTARGET", label = "Focus Target" },
+                    { action = "TARGETFOCUS", label = "Target Focus" },
+                },
+            },
             { kind = "header", label = "Gameplay & Input" },
             {
                 kind = "bool",
@@ -124,6 +132,13 @@ CAS.Tabs = {
         title = "Soft Target",
         items = {
             {
+                kind = "bindings_bar",
+                label = "Interact Keybind",
+                bindings = {
+                    { action = "INTERACTTARGET", label = "Interact With Target" },
+                },
+            },
+            {
                 kind = "actions",
                 label = "Quick Presets",
                 buttons = {
@@ -173,6 +188,7 @@ CAS.Tabs = {
             {
                 kind = "cycle",
                 key = "SoftTargetInteractArc",
+                dependsOn = { { cvar = "SoftTargetInteract", values = { "2", "3" }, reason = "Soft Interact is Off" } },
                 label = "Soft Interact Arc",
                 desc = "Cone direction for soft-interact detection (0=Ahead, 1=Within 30 deg, 2=Any direction).",
                 options = SOFT_ARC_OPTIONS,
@@ -180,6 +196,7 @@ CAS.Tabs = {
             {
                 kind = "slider",
                 key = "SoftTargetInteractRange",
+                dependsOn = { { cvar = "SoftTargetInteract", values = { "2", "3" }, reason = "Soft Interact is Off" } },
                 label = "Soft Interact Range (yds)",
                 desc = "Maximum distance in yards for soft-interact objects (default 10).",
                 min = 5, max = 40, step = 1, fmt = "%d",
@@ -187,12 +204,14 @@ CAS.Tabs = {
             {
                 kind = "bool",
                 key = "SoftTargetInteractRangeIsHard",
+                dependsOn = { { cvar = "SoftTargetInteract", values = { "2", "3" }, reason = "Soft Interact is Off" } },
                 label = "Hard Interact Range Limit",
                 desc = "Strictly enforce SoftTargetInteractRange instead of picking usable objects beyond it.",
             },
             {
                 kind = "bool",
                 key = "SoftTargetIconInteract",
+                dependsOn = { { cvar = "SoftTargetInteract", values = { "2", "3" }, reason = "Soft Interact is Off" } },
                 label = "Show Soft Interact Icon",
                 desc = "Display an icon above the active soft-interact object.",
             },
@@ -208,6 +227,7 @@ CAS.Tabs = {
             {
                 kind = "cycle",
                 key = "SoftTargetEnemyArc",
+                dependsOn = { { cvar = "SoftTargetEnemy", values = { "2", "3" }, reason = "Soft Enemy is Off" } },
                 label = "Soft Enemy Arc",
                 desc = "Cone direction for softenemy detection.",
                 options = SOFT_ARC_OPTIONS,
@@ -215,6 +235,7 @@ CAS.Tabs = {
             {
                 kind = "slider",
                 key = "SoftTargetEnemyRange",
+                dependsOn = { { cvar = "SoftTargetEnemy", values = { "2", "3" }, reason = "Soft Enemy is Off" } },
                 label = "Soft Enemy Range (yds)",
                 desc = "Maximum distance in yards for softenemy (default 45).",
                 min = 5, max = 60, step = 1, fmt = "%d",
@@ -222,6 +243,7 @@ CAS.Tabs = {
             {
                 kind = "bool",
                 key = "SoftTargetIconEnemy",
+                dependsOn = { { cvar = "SoftTargetEnemy", values = { "2", "3" }, reason = "Soft Enemy is Off" } },
                 label = "Show Soft Enemy Icon",
                 desc = "Display an icon over the active softenemy unit.",
             },
@@ -235,6 +257,7 @@ CAS.Tabs = {
             {
                 kind = "cycle",
                 key = "SoftTargetFriendArc",
+                dependsOn = { { cvar = "SoftTargetFriend", values = { "2", "3" }, reason = "Soft Friend is Off" } },
                 label = "Soft Friend Arc",
                 desc = "Cone direction for softfriend detection.",
                 options = SOFT_ARC_OPTIONS,
@@ -242,6 +265,7 @@ CAS.Tabs = {
             {
                 kind = "slider",
                 key = "SoftTargetFriendRange",
+                dependsOn = { { cvar = "SoftTargetFriend", values = { "2", "3" }, reason = "Soft Friend is Off" } },
                 label = "Soft Friend Range (yds)",
                 desc = "Maximum distance in yards for softfriend (default 45).",
                 min = 5, max = 60, step = 1, fmt = "%d",
@@ -249,6 +273,7 @@ CAS.Tabs = {
             {
                 kind = "bool",
                 key = "SoftTargetIconFriend",
+                dependsOn = { { cvar = "SoftTargetFriend", values = { "2", "3" }, reason = "Soft Friend is Off" } },
                 label = "Show Soft Friend Icon",
                 desc = "Display an icon over the active softfriend unit.",
             },
@@ -410,6 +435,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraOverShoulder",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "CameraReduceUnexpectedMovement", values = { "0" }, reason = "CameraReduceUnexpectedMovement is 1" },
+                },
                 label = "Over-the-Shoulder Offset (yds)",
                 desc = "Horizontal camera offset in yards (positive = right, negative = left, 0 = off).",
                 min = -5, max = 5, step = 0.25, fmt = "%.2f",
@@ -418,6 +447,7 @@ CAS.Tabs = {
                 kind = "bool",
                 key = "test_cameraDynamicPitch",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = { { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" } },
                 label = "Enable Dynamic Pitch",
                 desc = "Tilts camera down up to 5 deg so your character's feet stay in the lower part of the screen.",
             },
@@ -425,6 +455,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraDynamicPitchBaseFovPad",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraDynamicPitch", nonZero = true, reason = "Dynamic Pitch is Off" },
+                },
                 label = "Dynamic Pitch Base FOV Pad",
                 desc = "Fraction of screen height that the character's feet stay below (0.0 to 1.0, default 0.4).",
                 min = 0, max = 1, step = 0.05, fmt = "%.2f",
@@ -433,6 +467,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraDynamicPitchBaseFovPadDownScale",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraDynamicPitch", nonZero = true, reason = "Dynamic Pitch is Off" },
+                },
                 label = "Dynamic Pitch Look-Down Scale",
                 desc = "How much Dynamic Pitch tilts while looking down (0.0 to 1.0, default 0.25).",
                 min = 0, max = 1, step = 0.05, fmt = "%.2f",
@@ -441,6 +479,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraDynamicPitchSmartPivotCutoffDist",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraDynamicPitch", nonZero = true, reason = "Dynamic Pitch is Off" },
+                },
                 label = "Smart Pivot Cutoff Distance (yds)",
                 desc = "Within this camera distance (0 to 50 yds, default 10), stops cameraPivot while looking up.",
                 min = 0, max = 50, step = 1, fmt = "%d",
@@ -451,6 +493,7 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraHeadMovementStrength",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = { { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" } },
                 label = "Head Movement Strength",
                 desc = "How strongly the camera follows character head bob (0 = off, 0.5 = low, 1 = normal, 2 = heavy).",
                 min = 0, max = 2, step = 0.1, fmt = "%.1f",
@@ -459,6 +502,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraHeadMovementStandingStrength",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraHeadMovementStrength", nonZero = true, reason = "Head Movement Strength is 0" },
+                },
                 label = "Head Movement Standing Strength",
                 desc = "Strength while standing still (0 = only follow while moving/falling, default 0.3).",
                 min = 0, max = 1, step = 0.1, fmt = "%.1f",
@@ -467,6 +514,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraHeadMovementMovingStrength",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraHeadMovementStrength", nonZero = true, reason = "Head Movement Strength is 0" },
+                },
                 label = "Head Movement Moving Strength",
                 desc = "Strength while moving (default 0.5).",
                 min = 0, max = 1, step = 0.1, fmt = "%.1f",
@@ -475,6 +526,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraHeadMovementRangeScale",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraHeadMovementStrength", nonZero = true, reason = "Head Movement Strength is 0" },
+                },
                 label = "Head Movement Range Scale (yds)",
                 desc = "Camera distance for full head movement strength (0 to 50, default 5). Fades to 0 at 3x distance.",
                 min = 0, max = 50, step = 1, fmt = "%d",
@@ -483,6 +538,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraHeadMovementDeadZone",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraHeadMovementStrength", nonZero = true, reason = "Head Movement Strength is 0" },
+                },
                 label = "Head Movement Dead Zone (yds)",
                 desc = "How far the head can move before the camera follows (default 0.015).",
                 min = 0, max = 1, step = 0.01, fmt = "%.2f",
@@ -491,6 +550,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraHeadMovementStandingDampRate",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraHeadMovementStrength", nonZero = true, reason = "Head Movement Strength is 0" },
+                },
                 label = "Head Movement Standing Damp Rate",
                 desc = "How fast the camera catches up with the head while standing (0.1 to 50, default 10).",
                 min = 1, max = 50, step = 1, fmt = "%d",
@@ -499,6 +562,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraHeadMovementMovingDampRate",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraHeadMovementStrength", nonZero = true, reason = "Head Movement Strength is 0" },
+                },
                 label = "Head Movement Moving Damp Rate",
                 desc = "How fast the camera catches up with the head while moving (0.1 to 50, default 10).",
                 min = 1, max = 50, step = 1, fmt = "%d",
@@ -507,6 +574,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraHeadMovementFirstPersonDampRate",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraHeadMovementStrength", nonZero = true, reason = "Head Movement Strength is 0" },
+                },
                 label = "Head Movement First-Person Damp Rate",
                 desc = "How fast the camera catches up with the head in first person (0.1 to 50, default 20).",
                 min = 1, max = 50, step = 1, fmt = "%d",
@@ -517,6 +588,7 @@ CAS.Tabs = {
                 kind = "bool",
                 key = "test_cameraTargetFocusEnemyEnable",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = { { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" } },
                 label = "Target Focus: Attackable Enemies",
                 desc = "Subtly turns the camera toward your current attackable target (up to 80 yds).",
             },
@@ -524,6 +596,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraTargetFocusEnemyStrengthPitch",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraTargetFocusEnemyEnable", values = { "1" }, reason = "Enemy Target Focus is Off" },
+                },
                 label = "Enemy Focus Pitch Strength",
                 desc = "Vertical camera turn fraction toward enemy target (0.0 to 1.0, default 0.4).",
                 min = 0, max = 1, step = 0.05, fmt = "%.2f",
@@ -532,6 +608,10 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraTargetFocusEnemyStrengthYaw",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = {
+                    { cvar = "CameraKeepCharacterCentered", values = { "0" }, reason = "CameraKeepCharacterCentered is 1" },
+                    { cvar = "test_cameraTargetFocusEnemyEnable", values = { "1" }, reason = "Enemy Target Focus is Off" },
+                },
                 label = "Enemy Focus Yaw Strength",
                 desc = "Horizontal camera turn fraction toward enemy target (0.0 to 1.0, default 0.5).",
                 min = 0, max = 1, step = 0.05, fmt = "%.2f",
@@ -547,6 +627,7 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraTargetFocusInteractStrengthPitch",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = { { cvar = "test_cameraTargetFocusInteractEnable", values = { "1" }, reason = "Interact Target Focus is Off" } },
                 label = "Interact Focus Pitch Strength",
                 desc = "Vertical camera turn fraction toward interacted NPC/object (0.0 to 1.0, default 0.75).",
                 min = 0, max = 1, step = 0.05, fmt = "%.2f",
@@ -555,6 +636,7 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "test_cameraTargetFocusInteractStrengthYaw",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = { { cvar = "test_cameraTargetFocusInteractEnable", values = { "1" }, reason = "Interact Target Focus is Off" } },
                 label = "Interact Focus Yaw Strength",
                 desc = "Horizontal camera turn fraction toward interacted NPC/object (0.0 to 1.0, default 1.0).",
                 min = 0, max = 1, step = 0.05, fmt = "%.2f",
@@ -565,6 +647,7 @@ CAS.Tabs = {
                 kind = "cycle",
                 key = "cameraZSmooth",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = { { cvar = "CameraReduceUnexpectedMovement", values = { "1" }, reason = "Reduce Unexpected Movement is Off" } },
                 label = "Vertical Smoothing (cameraZSmooth)",
                 desc = "Requires Reduce Unexpected Movement=1. Smooths vertical camera motion (0=Off, 1=Moving, 2=Always).",
                 options = {
@@ -584,6 +667,7 @@ CAS.Tabs = {
                 kind = "slider",
                 key = "cameraIndirectOffset",
                 minVersion = 12309, minVersionStr = "v1.23.9",
+                dependsOn = { { cvar = "cameraIndirectVisibility", values = { "1" }, reason = "Indirect Visibility is Off" } },
                 label = "Indirect Visibility Offset (yds)",
                 desc = "How far to the sides and above the character the camera checks for a clear view (default 6).",
                 min = 1, max = 15, step = 0.5, fmt = "%.1f",
@@ -604,6 +688,7 @@ CAS.Tabs = {
             {
                 kind = "bool",
                 key = "damageMeterResetOnNewInstance",
+                dependsOn = { { cvar = "damageMeterEnabled", values = { "1" }, reason = "Built-in Damage Meter is Off" } },
                 label = "Auto-Reset Damage Meter on New Instance [Char]",
                 desc = "Automatically clear Damage Meter sessions each time you enter a different instance.",
             },
@@ -625,6 +710,7 @@ CAS.Tabs = {
             {
                 kind = "bool",
                 key = "advancedCombatLoggingMovement",
+                dependsOn = { { cvar = "advancedCombatLogging", values = { "1" }, reason = "Advanced Combat Logging is Off" } },
                 label = "Advanced Combat Log Movement File",
                 desc = "Write unit movement tracks to a companion file while Advanced Combat Logging is on. Required for /replay.",
             },
@@ -670,6 +756,7 @@ CAS.Tabs = {
             {
                 kind = "slider",
                 key = "maxFPS",
+                dependsOn = { { cvar = "useMaxFPS", values = { "1" }, reason = "Limit Foreground FPS is Off" } },
                 label = "Foreground Max FPS",
                 desc = "Maximum foreground frame rate when Limit Foreground FPS is enabled (default 120).",
                 min = 30, max = 300, step = 5, fmt = "%d",
@@ -683,6 +770,7 @@ CAS.Tabs = {
             {
                 kind = "slider",
                 key = "maxFPSBk",
+                dependsOn = { { cvar = "useMaxFPSBk", values = { "1" }, reason = "Limit Background FPS is Off" } },
                 label = "Background Max FPS",
                 desc = "Maximum background frame rate when Limit Background FPS is enabled (default 30).",
                 min = 10, max = 120, step = 5, fmt = "%d",
@@ -906,6 +994,37 @@ CAS.BuiltInPresets = {
         end,
     },
 }
+
+function CAS.ResetTabToDefault(tabId)
+    local count = 0
+    local t, i
+    for t = 1, table.getn(CAS.Tabs) do
+        local tab = CAS.Tabs[t]
+        if tab.id == tabId and tab.items then
+            for i = 1, table.getn(tab.items) do
+                local item = tab.items[i]
+                if item.kind == "api_bool" or item.kind == "api_slider" then
+                    if item.get() ~= item.default then
+                        item.set(item.default)
+                        count = count + 1
+                    end
+                elseif item.kind == "bool" or item.kind == "slider" or item.kind == "cycle" or item.kind == "tts_voice" then
+                    local def = CAS.SafeGetCVarDefault(item.key)
+                    if def ~= nil then
+                        local cur = CAS.SafeGetCVar(item.key)
+                        if cur ~= def then
+                            if CAS.SafeSetCVar(item.key, def) then
+                                count = count + 1
+                            end
+                        end
+                    end
+                end
+            end
+            break
+        end
+    end
+    return count
+end
 
 function CAS.ResetAllCVarsToDefault()
     local count = 0
