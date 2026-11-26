@@ -4,9 +4,14 @@
 ClassicAPISettings = ClassicAPISettings or {}
 local CAS = ClassicAPISettings
 
+CAS.TARGET_CLASSICAPI_VERSION = 12309
+CAS.TARGET_CLASSICAPI_STRING = "v1.23.9"
+
 CAS.Mods = {
     classicapi = false,
     classicapiVersion = nil,
+    classicapiVersionNum = 0,
+    classicapiOutdated = false,
     nampower = false,
     nampowerVersion = nil,
     unitxp = false,
@@ -74,10 +79,14 @@ function CAS.DetectMods()
     -- ClassicAPI
     if CLASSIC_API_VERSION ~= nil then
         m.classicapi = true
+        m.classicapiVersionNum = tonumber(CLASSIC_API_VERSION) or 0
         m.classicapiVersion = CAS.FormatClassicAPIVersion(CLASSIC_API_VERSION)
+        m.classicapiOutdated = (m.classicapiVersionNum > 0 and m.classicapiVersionNum < CAS.TARGET_CLASSICAPI_VERSION)
     else
         m.classicapi = false
+        m.classicapiVersionNum = 0
         m.classicapiVersion = nil
+        m.classicapiOutdated = false
     end
 
     -- Nampower
@@ -156,6 +165,41 @@ local function AddOverlap(severity, id, title, detail, keys, fixLabel, fixFunc)
     end
 end
 
+function CAS.IsCVarSupported(name)
+    if not name then return false end
+    if C_CVar and type(C_CVar.DoesCVarExist) == "function" then
+        local ok, exists = pcall(C_CVar.DoesCVarExist, name)
+        if ok then return exists and true or false end
+    end
+    return CAS.SafeGetCVar(name) ~= nil
+end
+
+function CAS.GetItemSupportStatus(item)
+    local m = CAS.Mods
+    if not m.classicapi then
+        return false, "ClassicAPI.dll is not installed. Install ClassicAPI " .. CAS.TARGET_CLASSICAPI_STRING .. "+."
+    end
+    if item.minVersion and m.classicapiVersionNum > 0 and m.classicapiVersionNum < item.minVersion then
+        local reqStr = item.minVersionStr or CAS.FormatClassicAPIVersion(item.minVersion)
+        return false, "Requires ClassicAPI " .. reqStr .. "+ (installed: " .. tostring(m.classicapiVersion) .. "). Update ClassicAPI.dll to use this setting."
+    end
+    if item.kind == "bool" or item.kind == "slider" or item.kind == "cycle" or item.kind == "tts_voice" then
+        if not CAS.IsCVarSupported(item.key) then
+            local reqStr = item.minVersionStr or CAS.TARGET_CLASSICAPI_STRING
+            return false, "CVar '" .. tostring(item.key) .. "' is not available in your ClassicAPI build (installed: " .. tostring(m.classicapiVersion) .. "). Update to ClassicAPI " .. reqStr .. "+."
+        end
+    elseif item.kind == "api_bool" then
+        if item.key == "C_PlayerCache" and (not C_PlayerCache or type(C_PlayerCache.IsEnabled) ~= "function") then
+            return false, "C_PlayerCache API is unavailable in your ClassicAPI build."
+        end
+    elseif item.kind == "api_slider" then
+        if item.key == "MaxAnimFramerate" and type(SetMaxAnimFramerate) ~= "function" then
+            return false, "SetMaxAnimFramerate API is unavailable in your ClassicAPI build."
+        end
+    end
+    return true, nil
+end
+
 function CAS.ScanOverlaps()
     CAS.Overlaps = {}
     CAS.OverlapsByKey = {}
@@ -165,11 +209,21 @@ function CAS.ScanOverlaps()
         AddOverlap(
             "HIGH",
             "no_classicapi",
-            "ClassicAPI.dll not detected",
-            "ClassicAPI is not loaded. Add ClassicAPI.dll to dlls.txt and launch via VanillaFixes.exe.",
+            "ClassicAPI.dll not detected (v1.23.9+ required)",
+            "ClassicAPI is not loaded. Download ClassicAPI " .. CAS.TARGET_CLASSICAPI_STRING .. "+, add ClassicAPI.dll to dlls.txt, and launch via VanillaFixes.exe.",
             {}
         )
         return CAS.Overlaps
+    end
+
+    if m.classicapiOutdated then
+        AddOverlap(
+            "WARN",
+            "classicapi_outdated",
+            "Outdated ClassicAPI detected (" .. tostring(m.classicapiVersion) .. " < " .. CAS.TARGET_CLASSICAPI_STRING .. ")",
+            "This addon targets ClassicAPI " .. CAS.TARGET_CLASSICAPI_STRING .. "+. Settings marked [Req v1.23.9+] (ActionCam, maxFPSLoading, friendly nameplate class colors, /addons) cannot run until you update ClassicAPI.dll.",
+            {}
+        )
     end
 
     -- 1. WeirdUtils dpslog vs ClassicAPI CLEU / GetSpellInfo
@@ -355,6 +409,37 @@ function CAS.ScanOverlaps()
             "!BugGrabber captures Lua errors",
             "ClassicAPI's built-in Lua error popup automatically yields to !BugGrabber/BugSack so errors are not shown twice. Use /bugsack or /luaerrors manually if needed.",
             {}
+        )
+    end
+
+    -- 13. ActionCam features enabled while CameraKeepCharacterCentered=1
+    local acShoulder = tonumber(CAS.SafeGetCVar("test_cameraOverShoulder")) or 0
+    local acPitch = tonumber(CAS.SafeGetCVar("test_cameraDynamicPitch")) or 0
+    local acHead = tonumber(CAS.SafeGetCVar("test_cameraHeadMovementStrength")) or 0
+    local acEnemy = tonumber(CAS.SafeGetCVar("test_cameraTargetFocusEnemyEnable")) or 0
+    local anyActionCam = (acShoulder ~= 0) or (acPitch ~= 0) or (acHead ~= 0) or (acEnemy ~= 0)
+    if anyActionCam and CAS.SafeGetCVar("CameraKeepCharacterCentered") == "1" then
+        AddOverlap(
+            "WARN",
+            "actioncam_centered_blocked",
+            "ActionCam blocked by CameraKeepCharacterCentered=1",
+            "Over-the-Shoulder, Dynamic Pitch, Head Movement, and Enemy Focus do not operate while CameraKeepCharacterCentered is 1.",
+            { "CameraKeepCharacterCentered", "test_cameraOverShoulder", "test_cameraDynamicPitch", "test_cameraHeadMovementStrength", "test_cameraTargetFocusEnemyEnable" },
+            "Unlock Camera Center",
+            function()
+                CAS.SafeSetCVar("CameraKeepCharacterCentered", "0")
+            end
+        )
+    end
+
+    -- 14. ActionCam vs UnitXP SP3 Camera
+    if m.unitxp and anyActionCam then
+        AddOverlap(
+            "INFO",
+            "actioncam_unitxp_camera",
+            "ClassicAPI ActionCam + UnitXP SP3 Camera",
+            "UnitXP SP3 also offers camera displacement, pitch, follow-target, and organic smoothing. Avoid enabling conflicting camera offsets in both mods at the same time.",
+            { "test_cameraOverShoulder", "test_cameraDynamicPitch", "test_cameraTargetFocusEnemyEnable", "cameraZSmooth" }
         )
     end
 

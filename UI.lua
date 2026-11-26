@@ -4,9 +4,9 @@
 ClassicAPISettings = ClassicAPISettings or {}
 local CAS = ClassicAPISettings
 
-local FRAME_W = 580
+local FRAME_W = 620
 local FRAME_H = 500
-local CONTENT_W = 515
+local CONTENT_W = 555
 
 local mainFrame = nil
 local scrollFrame = nil
@@ -45,47 +45,57 @@ local function SetTooltip(owner, title, lines)
     end)
 end
 
+local function ShowSettingTooltip(owner, item)
+    GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+    GameTooltip:SetText(item.label, 1, 0.82, 0)
+    if item.desc then
+        GameTooltip:AddLine(item.desc, 0.95, 0.95, 0.95, 1)
+    end
+    local supported, unsupReason = CAS.GetItemSupportStatus(item)
+    if not supported then
+        GameTooltip:AddLine(" ", 1, 1, 1)
+        GameTooltip:AddLine("[UNSUPPORTED ON CURRENT VERSION]", 1, 0.25, 0.25)
+        GameTooltip:AddLine(unsupReason, 1, 0.72, 0.25, 1)
+    end
+    if item.kind == "bool" or item.kind == "slider" or item.kind == "cycle" or item.kind == "tts_voice" then
+        local cur = CAS.SafeGetCVar(item.key)
+        local def = CAS.SafeGetCVarDefault(item.key)
+        local scope = "Account (Config.wtf)"
+        if C_CVar and type(C_CVar.GetCVarInfo) == "function" then
+            local ok, _, _, _, isChar = pcall(C_CVar.GetCVarInfo, item.key)
+            if ok and isChar then
+                scope = "Per-Character (config-cache.wtf)"
+            end
+        end
+        GameTooltip:AddLine(" ", 1, 1, 1)
+        GameTooltip:AddLine("CVar: |cff88ccff" .. item.key .. "|r   (" .. scope .. ")", 0.75, 0.75, 0.75)
+        GameTooltip:AddLine("Current: |cffffffff" .. tostring(cur or "nil") .. "|r   Default: |cffaaaaaa" .. tostring(def or "nil") .. "|r", 0.75, 0.75, 0.75)
+    elseif item.kind == "api_bool" or item.kind == "api_slider" then
+        GameTooltip:AddLine(" ", 1, 1, 1)
+        GameTooltip:AddLine("API Setting: |cff88ccff" .. item.key .. "|r   Default: |cffaaaaaa" .. tostring(item.default) .. "|r", 0.75, 0.75, 0.75)
+    end
+    local ovs = CAS.OverlapsByKey[item.key]
+    if ovs and table.getn(ovs) > 0 then
+        GameTooltip:AddLine(" ", 1, 1, 1)
+        local i
+        for i = 1, table.getn(ovs) do
+            local ov = ovs[i]
+            local r, g, b = 0.4, 0.8, 1.0
+            if ov.severity == "HIGH" then
+                r, g, b = 1.0, 0.25, 0.25
+            elseif ov.severity == "WARN" then
+                r, g, b = 1.0, 0.65, 0.1
+            end
+            GameTooltip:AddLine("[" .. ov.severity .. "] " .. ov.title, r, g, b, 1)
+            GameTooltip:AddLine(ov.detail, 0.9, 0.85, 0.7, 1)
+        end
+    end
+    GameTooltip:Show()
+end
+
 local function AttachSettingTooltip(owner, item)
     owner:SetScript("OnEnter", function()
-        GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-        GameTooltip:SetText(item.label, 1, 0.82, 0)
-        if item.desc then
-            GameTooltip:AddLine(item.desc, 0.95, 0.95, 0.95, 1)
-        end
-        if item.kind == "bool" or item.kind == "slider" or item.kind == "cycle" or item.kind == "tts_voice" then
-            local cur = CAS.SafeGetCVar(item.key)
-            local def = CAS.SafeGetCVarDefault(item.key)
-            local scope = "Account (Config.wtf)"
-            if C_CVar and type(C_CVar.GetCVarInfo) == "function" then
-                local ok, _, _, _, isChar = pcall(C_CVar.GetCVarInfo, item.key)
-                if ok and isChar then
-                    scope = "Per-Character (config-cache.wtf)"
-                end
-            end
-            GameTooltip:AddLine(" ", 1, 1, 1)
-            GameTooltip:AddLine("CVar: |cff88ccff" .. item.key .. "|r   (" .. scope .. ")", 0.75, 0.75, 0.75)
-            GameTooltip:AddLine("Current: |cffffffff" .. tostring(cur or "nil") .. "|r   Default: |cffaaaaaa" .. tostring(def or "nil") .. "|r", 0.75, 0.75, 0.75)
-        elseif item.kind == "api_bool" or item.kind == "api_slider" then
-            GameTooltip:AddLine(" ", 1, 1, 1)
-            GameTooltip:AddLine("API Setting: |cff88ccff" .. item.key .. "|r   Default: |cffaaaaaa" .. tostring(item.default) .. "|r", 0.75, 0.75, 0.75)
-        end
-        local ovs = CAS.OverlapsByKey[item.key]
-        if ovs and table.getn(ovs) > 0 then
-            GameTooltip:AddLine(" ", 1, 1, 1)
-            local i
-            for i = 1, table.getn(ovs) do
-                local ov = ovs[i]
-                local r, g, b = 0.4, 0.8, 1.0
-                if ov.severity == "HIGH" then
-                    r, g, b = 1.0, 0.25, 0.25
-                elseif ov.severity == "WARN" then
-                    r, g, b = 1.0, 0.65, 0.1
-                end
-                GameTooltip:AddLine("[" .. ov.severity .. "] " .. ov.title, r, g, b, 1)
-                GameTooltip:AddLine(ov.detail, 0.9, 0.85, 0.7, 1)
-            end
-        end
-        GameTooltip:Show()
+        ShowSettingTooltip(this, item)
     end)
     owner:SetScript("OnLeave", function()
         GameTooltip:Hide()
@@ -100,50 +110,19 @@ local function EnableRowHover(row, item)
     hl:Hide()
     row:SetScript("OnEnter", function()
         hl:Show()
-        GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-        GameTooltip:SetText(item.label, 1, 0.82, 0)
-        if item.desc then
-            GameTooltip:AddLine(item.desc, 0.95, 0.95, 0.95, 1)
-        end
-        if item.kind == "bool" or item.kind == "slider" or item.kind == "cycle" or item.kind == "tts_voice" then
-            local cur = CAS.SafeGetCVar(item.key)
-            local def = CAS.SafeGetCVarDefault(item.key)
-            local scope = "Account (Config.wtf)"
-            if C_CVar and type(C_CVar.GetCVarInfo) == "function" then
-                local ok, _, _, _, isChar = pcall(C_CVar.GetCVarInfo, item.key)
-                if ok and isChar then
-                    scope = "Per-Character (config-cache.wtf)"
-                end
-            end
-            GameTooltip:AddLine(" ", 1, 1, 1)
-            GameTooltip:AddLine("CVar: |cff88ccff" .. item.key .. "|r   (" .. scope .. ")", 0.75, 0.75, 0.75)
-            GameTooltip:AddLine("Current: |cffffffff" .. tostring(cur or "nil") .. "|r   Default: |cffaaaaaa" .. tostring(def or "nil") .. "|r", 0.75, 0.75, 0.75)
-        elseif item.kind == "api_bool" or item.kind == "api_slider" then
-            GameTooltip:AddLine(" ", 1, 1, 1)
-            GameTooltip:AddLine("API Setting: |cff88ccff" .. item.key .. "|r   Default: |cffaaaaaa" .. tostring(item.default) .. "|r", 0.75, 0.75, 0.75)
-        end
-        local ovs = CAS.OverlapsByKey[item.key]
-        if ovs and table.getn(ovs) > 0 then
-            GameTooltip:AddLine(" ", 1, 1, 1)
-            local i
-            for i = 1, table.getn(ovs) do
-                local ov = ovs[i]
-                local r, g, b = 0.4, 0.8, 1.0
-                if ov.severity == "HIGH" then
-                    r, g, b = 1.0, 0.25, 0.25
-                elseif ov.severity == "WARN" then
-                    r, g, b = 1.0, 0.65, 0.1
-                end
-                GameTooltip:AddLine("[" .. ov.severity .. "] " .. ov.title, r, g, b, 1)
-                GameTooltip:AddLine(ov.detail, 0.9, 0.85, 0.7, 1)
-            end
-        end
-        GameTooltip:Show()
+        ShowSettingTooltip(this, item)
     end)
     row:SetScript("OnLeave", function()
         hl:Hide()
         GameTooltip:Hide()
     end)
+end
+
+local function GetUnsupportedTag(item)
+    local supported = CAS.GetItemSupportStatus(item)
+    if supported then return "" end
+    local reqStr = item.minVersionStr or CAS.TARGET_CLASSICAPI_STRING
+    return "|cffff6633[Req " .. reqStr .. "+]|r "
 end
 
 local function GetBadgeTextForKey(key)
@@ -216,12 +195,24 @@ local function BuildStandardTab(panel, tabDef)
                 btn:SetPoint("TOPLEFT", panel, "TOPLEFT", bx, y)
                 btn:SetText(bDef.label)
                 local fn = bDef.func
+                local curBDef = bDef
                 btn:SetScript("OnClick", function()
+                    if curBDef.minVersion then
+                        local okSup, reason = CAS.GetItemSupportStatus(curBDef)
+                        if not okSup then
+                            CAS.Print("|cffff5533[Unsupported]|r " .. tostring(reason))
+                            return
+                        end
+                    end
                     fn()
                     CAS.RefreshUI()
                 end)
                 if bDef.tip then
-                    SetTooltip(btn, bDef.label, { bDef.tip })
+                    local tipLines = { bDef.tip }
+                    if bDef.minVersion then
+                        table.insert(tipLines, { text = "Requires ClassicAPI " .. (bDef.minVersionStr or CAS.TARGET_CLASSICAPI_STRING) .. "+", r = 1, g = 0.7, b = 0.2 })
+                    end
+                    SetTooltip(btn, bDef.label, tipLines)
                 end
                 bx = bx + (bDef.width or 116) + 6
             end
@@ -246,6 +237,12 @@ local function BuildStandardTab(panel, tabDef)
             local curItem = item
             cb:SetScript("OnClick", function()
                 if isRefreshing then return end
+                local okSup, reason = CAS.GetItemSupportStatus(curItem)
+                if not okSup then
+                    CAS.Print("|cffff5533[Unsupported]|r Cannot change '" .. curItem.label .. "': " .. tostring(reason))
+                    CAS.RefreshUI()
+                    return
+                end
                 local checked = this:GetChecked() and true or false
                 if curItem.kind == "api_bool" then
                     curItem.set(checked)
@@ -270,25 +267,25 @@ local function BuildStandardTab(panel, tabDef)
             table.insert(panel.controls, {
                 item = curItem,
                 refresh = function()
-                    local badge = GetBadgeTextForKey(curItem.key) or ""
+                    local supported = CAS.GetItemSupportStatus(curItem)
+                    local badge = GetUnsupportedTag(curItem) .. (GetBadgeTextForKey(curItem.key) or "")
                     local isModified = false
                     if curItem.kind == "api_bool" then
                         local val = curItem.get()
                         cb:SetChecked(val and 1 or nil)
-                        isModified = (val ~= curItem.default)
+                        isModified = supported and (val ~= curItem.default)
                     else
                         local val = CAS.SafeGetCVar(curItem.key)
                         local def = CAS.SafeGetCVarDefault(curItem.key)
                         cb:SetChecked((val == "1") and 1 or nil)
-                        isModified = (def ~= nil and val ~= nil and val ~= def)
-                        if val == nil then
-                            cb:Disable()
-                        else
-                            cb:Enable()
-                        end
+                        isModified = supported and (def ~= nil and val ~= nil and val ~= def)
                     end
+                    cb:Enable()
                     text:SetText(badge .. curItem.label)
-                    if isModified then
+                    if not supported then
+                        text:SetTextColor(0.75, 0.52, 0.35)
+                        resetBtn:Hide()
+                    elseif isModified then
                         text:SetTextColor(1, 0.85, 0.2)
                         resetBtn:Show()
                     else
@@ -338,6 +335,8 @@ local function BuildStandardTab(panel, tabDef)
 
             slider:SetScript("OnValueChanged", function()
                 if isRefreshing then return end
+                local okSup = CAS.GetItemSupportStatus(curItem)
+                if not okSup then return end
                 local v = this:GetValue()
                 -- Round to step precision to avoid float noise
                 if curItem.step < 1 then
@@ -354,6 +353,10 @@ local function BuildStandardTab(panel, tabDef)
                 end
             end)
             slider:SetScript("OnMouseUp", function()
+                local okSup, reason = CAS.GetItemSupportStatus(curItem)
+                if not okSup then
+                    CAS.Print("|cffff5533[Unsupported]|r Cannot change '" .. curItem.label .. "': " .. tostring(reason))
+                end
                 CAS.RefreshUI()
             end)
             AttachSettingTooltip(slider, curItem)
@@ -372,7 +375,8 @@ local function BuildStandardTab(panel, tabDef)
             table.insert(panel.controls, {
                 item = curItem,
                 refresh = function()
-                    local badge = GetBadgeTextForKey(curItem.key) or ""
+                    local supported = CAS.GetItemSupportStatus(curItem)
+                    local badge = GetUnsupportedTag(curItem) .. (GetBadgeTextForKey(curItem.key) or "")
                     local numVal, defNum
                     if curItem.kind == "api_slider" then
                         numVal = curItem.get() or curItem.default
@@ -388,10 +392,13 @@ local function BuildStandardTab(panel, tabDef)
                     if clamped < curItem.min then clamped = curItem.min end
                     if clamped > curItem.max then clamped = curItem.max end
                     slider:SetValue(clamped)
-                    valFS:SetText(FormatVal(numVal))
+                    valFS:SetText(supported and FormatVal(numVal) or "|cffff6633N/A|r")
                     titleFS:SetText(badge .. curItem.label)
-                    local isModified = (defNum ~= nil and math.abs(numVal - defNum) > 0.001)
-                    if isModified then
+                    local isModified = supported and (defNum ~= nil and math.abs(numVal - defNum) > 0.001)
+                    if not supported then
+                        titleFS:SetTextColor(0.75, 0.52, 0.35)
+                        resetBtn:Hide()
+                    elseif isModified then
                         titleFS:SetTextColor(1, 0.85, 0.2)
                         resetBtn:Show()
                     else
@@ -445,6 +452,11 @@ local function BuildStandardTab(panel, tabDef)
             end
 
             btn:SetScript("OnClick", function()
+                local okSup, reason = CAS.GetItemSupportStatus(curItem)
+                if not okSup then
+                    CAS.Print("|cffff5533[Unsupported]|r Cannot change '" .. curItem.label .. "': " .. tostring(reason))
+                    return
+                end
                 local opts = GetOptions()
                 local n = table.getn(opts)
                 if n == 0 then return end
@@ -474,11 +486,12 @@ local function BuildStandardTab(panel, tabDef)
             table.insert(panel.controls, {
                 item = curItem,
                 refresh = function()
-                    local badge = GetBadgeTextForKey(curItem.key) or ""
+                    local supported = CAS.GetItemSupportStatus(curItem)
+                    local badge = GetUnsupportedTag(curItem) .. (GetBadgeTextForKey(curItem.key) or "")
                     local cur = CAS.SafeGetCVar(curItem.key)
                     local def = CAS.SafeGetCVarDefault(curItem.key)
                     local opts = GetOptions()
-                    local label = tostring(cur or "nil")
+                    local label = tostring(cur or "N/A")
                     local oi
                     for oi = 1, table.getn(opts) do
                         if opts[oi].value == cur then
@@ -486,10 +499,13 @@ local function BuildStandardTab(panel, tabDef)
                             break
                         end
                     end
-                    btn:SetText(label)
+                    btn:SetText(supported and label or "|cffff6633Unsupported|r")
                     titleFS:SetText(badge .. curItem.label)
-                    local isModified = (def ~= nil and cur ~= nil and cur ~= def)
-                    if isModified then
+                    local isModified = supported and (def ~= nil and cur ~= nil and cur ~= def)
+                    if not supported then
+                        titleFS:SetTextColor(0.75, 0.52, 0.35)
+                        resetBtn:Hide()
+                    elseif isModified then
                         titleFS:SetTextColor(1, 0.85, 0.2)
                         resetBtn:Show()
                     else
@@ -673,6 +689,7 @@ local function BuildToolsTab(panel)
         { label = "/tinspect", tip = "Open Table Inspector on frame under cursor.", cmd = "/tinspect" },
         { label = "/luaerrors", tip = "Open ClassicAPI's Lua Error window.", cmd = "/luaerrors" },
         { label = "/classicapi", tip = "Open in-game ClassicAPI documentation browser.", cmd = "/classicapi" },
+        { label = "/addons", tip = "Open ClassicAPI's Retail-style in-game AddOn List (Requires v1.23.9+).", cmd = "/addons", minVersion = 12309, minVersionStr = "v1.23.9" },
         { label = "/replay", tip = "Open 3D Encounter Replay window.", cmd = "/replay" },
         {
             label = "Built-in Options",
@@ -705,6 +722,13 @@ local function BuildToolsTab(panel)
         btn:SetText(tb.label)
         local curTb = tb
         btn:SetScript("OnClick", function()
+            if curTb.minVersion then
+                local okSup, reason = CAS.GetItemSupportStatus(curTb)
+                if not okSup then
+                    CAS.Print("|cffff5533[Unsupported]|r Cannot run '" .. curTb.label .. "': " .. tostring(reason))
+                    return
+                end
+            end
             if curTb.func then
                 curTb.func()
             elseif curTb.cmd then
@@ -851,14 +875,21 @@ function CAS.RefreshUI()
 
     -- Update status bar text
     if mainFrame.statusFS then
-        local ver = CAS.Mods.classicapi and ("ClassicAPI " .. CAS.Mods.classicapiVersion) or "|cffff3333ClassicAPI NOT DETECTED|r"
+        local ver
+        if not CAS.Mods.classicapi then
+            ver = "Target: " .. CAS.TARGET_CLASSICAPI_STRING .. "+  |  |cffff3333ClassicAPI NOT DETECTED|r"
+        elseif CAS.Mods.classicapiOutdated then
+            ver = "Target: " .. CAS.TARGET_CLASSICAPI_STRING .. "+  |  Installed: |cffffaa22" .. CAS.Mods.classicapiVersion .. " (Update!)|r"
+        else
+            ver = "Target: " .. CAS.TARGET_CLASSICAPI_STRING .. "+  |  Installed: |cff44ff44" .. CAS.Mods.classicapiVersion .. "|r"
+        end
         local ovTxt = ""
         if high > 0 then
-            ovTxt = "   |   |cffff3333" .. high .. " HIGH overlap(s)|r"
+            ovTxt = "   |   |cffff3333" .. high .. " HIGH|r"
         elseif warn > 0 then
-            ovTxt = "   |   |cffffaa22" .. warn .. " warning(s)|r"
+            ovTxt = "   |   |cffffaa22" .. warn .. " WARN|r"
         else
-            ovTxt = "   |   |cff44ff44No critical overlaps|r"
+            ovTxt = "   |   |cff44ff44OK|r"
         end
         mainFrame.statusFS:SetText(ver .. ovTxt)
     end
@@ -919,7 +950,7 @@ function CAS.CreateUI()
 
     local titleFS = mainFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleFS:SetPoint("TOP", headerTex, "TOP", 0, -14)
-    titleFS:SetText("ClassicAPI Settings")
+    titleFS:SetText("ClassicAPI Settings (" .. CAS.TARGET_CLASSICAPI_STRING .. "+)")
 
     local closeBtn = CreateFrame("Button", nil, mainFrame, "UIPanelCloseButton")
     closeBtn:SetPoint("TOPRIGHT", mainFrame, "TOPRIGHT", -6, -6)
@@ -927,6 +958,7 @@ function CAS.CreateUI()
     local TAB_TIPS = {
         general = "Gameplay QoL, key-down casting, auto stand/dismount/unshift, cursors, cooldown numbers, and persistent player cache.",
         softtarget = "Soft Interact, Soft Enemy, Soft Friend modes, arcs, ranges, and world/nameplate icon sizing.",
+        camera = "ActionCam presets, Over-the-Shoulder, Dynamic Pitch, Head Movement, Target Focus, Vertical Smoothing, and Indirect Visibility (v1.23.9+).",
         combat = "Built-in Damage Meter, Combat Log retention, Advanced Combat Logging, and 3D Encounter Replay.",
         perf = "Foreground/background FPS caps, animation framerate, CPU profiling, nameplate alpha, bag sorting, AutoComplete, and TTS.",
         overlaps = "Detected client DLL mods and active cross-mod overlap warnings with one-click Quick Fix actions.",

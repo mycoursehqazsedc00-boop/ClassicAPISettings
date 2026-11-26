@@ -83,11 +83,13 @@ function CAS.CreateMinimapButton()
 
     mmBtn:SetScript("OnEnter", function()
         GameTooltip:SetOwner(this, "ANCHOR_LEFT")
-        GameTooltip:SetText("ClassicAPI Settings", 1, 0.82, 0)
-        if CAS.Mods.classicapi then
-            GameTooltip:AddLine("ClassicAPI " .. CAS.Mods.classicapiVersion, 0.3, 1, 0.3)
+        GameTooltip:SetText("ClassicAPI Settings (" .. CAS.TARGET_CLASSICAPI_STRING .. "+)", 1, 0.82, 0)
+        if not CAS.Mods.classicapi then
+            GameTooltip:AddLine("ClassicAPI.dll not detected! Install " .. CAS.TARGET_CLASSICAPI_STRING .. "+", 1, 0.25, 0.25)
+        elseif CAS.Mods.classicapiOutdated then
+            GameTooltip:AddLine("Installed: " .. CAS.Mods.classicapiVersion .. " (Update to " .. CAS.TARGET_CLASSICAPI_STRING .. "+)", 1, 0.65, 0.15)
         else
-            GameTooltip:AddLine("ClassicAPI.dll not detected", 1, 0.25, 0.25)
+            GameTooltip:AddLine("Installed: ClassicAPI " .. CAS.Mods.classicapiVersion, 0.3, 1, 0.3)
         end
         local high, warn = CAS.GetOverlapCounts()
         if high > 0 then

@@ -1,8 +1,8 @@
 ## Interface: 11200
-## Title: ClassicAPI Settings
-## Notes: Vanilla-styled settings panel, presets, and cross-mod overlap detector for ClassicAPI.
+## Title: ClassicAPI Settings (v1.23.9+)
+## Notes: Vanilla-styled settings panel, presets, and cross-mod overlap detector built for ClassicAPI v1.23.9+ (graceful warnings on older versions).
 ## Author: Community
-## Version: 1.0.0
+## Version: 1.1.0
 ## SavedVariables: ClassicAPISettingsDB
 
 Conflicts.lua

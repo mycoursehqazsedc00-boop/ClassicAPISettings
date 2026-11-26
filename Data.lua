@@ -317,6 +317,280 @@ CAS.Tabs = {
         },
     },
     {
+        id = "camera",
+        title = "Camera",
+        items = {
+            {
+                kind = "actions",
+                label = "ActionCam Presets",
+                minVersion = 12309,
+                minVersionStr = "v1.23.9",
+                buttons = {
+                    {
+                        label = "Off",
+                        width = 76,
+                        minVersion = 12309,
+                        minVersionStr = "v1.23.9",
+                        tip = "Disable all ActionCam features and restore centered camera.",
+                        func = function()
+                            CAS.SafeSetCVar("CameraKeepCharacterCentered", "1")
+                            CAS.SafeSetCVar("test_cameraDynamicPitch", "0")
+                            CAS.SafeSetCVar("test_cameraOverShoulder", "0")
+                            CAS.SafeSetCVar("test_cameraTargetFocusEnemyEnable", "0")
+                            CAS.SafeSetCVar("test_cameraTargetFocusInteractEnable", "0")
+                            CAS.SafeSetCVar("test_cameraHeadMovementStrength", "0")
+                        end,
+                    },
+                    {
+                        label = "Basic",
+                        width = 76,
+                        minVersion = 12309,
+                        minVersionStr = "v1.23.9",
+                        tip = "Unlock center + Dynamic Pitch only (equivalent to ActionCam basic).",
+                        func = function()
+                            CAS.SafeSetCVar("CameraKeepCharacterCentered", "0")
+                            CAS.SafeSetCVar("test_cameraDynamicPitch", "1")
+                            CAS.SafeSetCVar("test_cameraOverShoulder", "0")
+                            CAS.SafeSetCVar("test_cameraTargetFocusEnemyEnable", "0")
+                            CAS.SafeSetCVar("test_cameraTargetFocusInteractEnable", "0")
+                            CAS.SafeSetCVar("test_cameraHeadMovementStrength", "0")
+                        end,
+                    },
+                    {
+                        label = "On",
+                        width = 76,
+                        minVersion = 12309,
+                        minVersionStr = "v1.23.9",
+                        tip = "Dynamic Pitch + Over-the-Shoulder + Interact Focus + Head Movement (ActionCam on).",
+                        func = function()
+                            CAS.SafeSetCVar("CameraKeepCharacterCentered", "0")
+                            CAS.SafeSetCVar("test_cameraDynamicPitch", "1")
+                            CAS.SafeSetCVar("test_cameraOverShoulder", "1")
+                            CAS.SafeSetCVar("test_cameraTargetFocusEnemyEnable", "0")
+                            CAS.SafeSetCVar("test_cameraTargetFocusInteractEnable", "1")
+                            CAS.SafeSetCVar("test_cameraHeadMovementStrength", "1")
+                        end,
+                    },
+                    {
+                        label = "Full",
+                        width = 76,
+                        minVersion = 12309,
+                        minVersionStr = "v1.23.9",
+                        tip = "Enable all ActionCam features including Enemy Target Focus (ActionCam full).",
+                        func = function()
+                            CAS.SafeSetCVar("CameraKeepCharacterCentered", "0")
+                            CAS.SafeSetCVar("test_cameraDynamicPitch", "1")
+                            CAS.SafeSetCVar("test_cameraOverShoulder", "1")
+                            CAS.SafeSetCVar("test_cameraTargetFocusEnemyEnable", "1")
+                            CAS.SafeSetCVar("test_cameraTargetFocusInteractEnable", "1")
+                            CAS.SafeSetCVar("test_cameraHeadMovementStrength", "1")
+                        end,
+                    },
+                },
+            },
+
+            { kind = "header", label = "ActionCam Master Switches (Requires v1.23.9+)" },
+            {
+                kind = "bool",
+                key = "CameraKeepCharacterCentered",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Keep Character Centered (Blocks Most ActionCam)",
+                desc = "Default 1. Must be set to 0 for Over-the-Shoulder, Dynamic Pitch, Head Movement, and Enemy Focus to operate.",
+            },
+            {
+                kind = "bool",
+                key = "CameraReduceUnexpectedMovement",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Reduce Unexpected Movement (Enables Vertical Smoothing)",
+                desc = "Disables Over-the-Shoulder and allows cameraZSmooth vertical smoothing to operate.",
+            },
+
+            { kind = "header", label = "Over the Shoulder & Dynamic Pitch" },
+            {
+                kind = "slider",
+                key = "test_cameraOverShoulder",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Over-the-Shoulder Offset (yds)",
+                desc = "Horizontal camera offset in yards (positive = right, negative = left, 0 = off).",
+                min = -5, max = 5, step = 0.25, fmt = "%.2f",
+            },
+            {
+                kind = "bool",
+                key = "test_cameraDynamicPitch",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Enable Dynamic Pitch",
+                desc = "Tilts camera down up to 5 deg so your character's feet stay in the lower part of the screen.",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraDynamicPitchBaseFovPad",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Dynamic Pitch Base FOV Pad",
+                desc = "Fraction of screen height that the character's feet stay below (0.0 to 1.0, default 0.4).",
+                min = 0, max = 1, step = 0.05, fmt = "%.2f",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraDynamicPitchBaseFovPadDownScale",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Dynamic Pitch Look-Down Scale",
+                desc = "How much Dynamic Pitch tilts while looking down (0.0 to 1.0, default 0.25).",
+                min = 0, max = 1, step = 0.05, fmt = "%.2f",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraDynamicPitchSmartPivotCutoffDist",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Smart Pivot Cutoff Distance (yds)",
+                desc = "Within this camera distance (0 to 50 yds, default 10), stops cameraPivot while looking up.",
+                min = 0, max = 50, step = 1, fmt = "%d",
+            },
+
+            { kind = "header", label = "Head Movement" },
+            {
+                kind = "slider",
+                key = "test_cameraHeadMovementStrength",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Head Movement Strength",
+                desc = "How strongly the camera follows character head bob (0 = off, 0.5 = low, 1 = normal, 2 = heavy).",
+                min = 0, max = 2, step = 0.1, fmt = "%.1f",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraHeadMovementStandingStrength",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Head Movement Standing Strength",
+                desc = "Strength while standing still (0 = only follow while moving/falling, default 0.3).",
+                min = 0, max = 1, step = 0.1, fmt = "%.1f",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraHeadMovementMovingStrength",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Head Movement Moving Strength",
+                desc = "Strength while moving (default 0.5).",
+                min = 0, max = 1, step = 0.1, fmt = "%.1f",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraHeadMovementRangeScale",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Head Movement Range Scale (yds)",
+                desc = "Camera distance for full head movement strength (0 to 50, default 5). Fades to 0 at 3x distance.",
+                min = 0, max = 50, step = 1, fmt = "%d",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraHeadMovementDeadZone",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Head Movement Dead Zone (yds)",
+                desc = "How far the head can move before the camera follows (default 0.015).",
+                min = 0, max = 1, step = 0.01, fmt = "%.2f",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraHeadMovementStandingDampRate",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Head Movement Standing Damp Rate",
+                desc = "How fast the camera catches up with the head while standing (0.1 to 50, default 10).",
+                min = 1, max = 50, step = 1, fmt = "%d",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraHeadMovementMovingDampRate",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Head Movement Moving Damp Rate",
+                desc = "How fast the camera catches up with the head while moving (0.1 to 50, default 10).",
+                min = 1, max = 50, step = 1, fmt = "%d",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraHeadMovementFirstPersonDampRate",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Head Movement First-Person Damp Rate",
+                desc = "How fast the camera catches up with the head in first person (0.1 to 50, default 20).",
+                min = 1, max = 50, step = 1, fmt = "%d",
+            },
+
+            { kind = "header", label = "Target Focus" },
+            {
+                kind = "bool",
+                key = "test_cameraTargetFocusEnemyEnable",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Target Focus: Attackable Enemies",
+                desc = "Subtly turns the camera toward your current attackable target (up to 80 yds).",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraTargetFocusEnemyStrengthPitch",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Enemy Focus Pitch Strength",
+                desc = "Vertical camera turn fraction toward enemy target (0.0 to 1.0, default 0.4).",
+                min = 0, max = 1, step = 0.05, fmt = "%.2f",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraTargetFocusEnemyStrengthYaw",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Enemy Focus Yaw Strength",
+                desc = "Horizontal camera turn fraction toward enemy target (0.0 to 1.0, default 0.5).",
+                min = 0, max = 1, step = 0.05, fmt = "%.2f",
+            },
+            {
+                kind = "bool",
+                key = "test_cameraTargetFocusInteractEnable",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Target Focus: NPCs & Objects",
+                desc = "Turns the camera toward NPCs/objects when their quest, vendor, or trainer window opens.",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraTargetFocusInteractStrengthPitch",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Interact Focus Pitch Strength",
+                desc = "Vertical camera turn fraction toward interacted NPC/object (0.0 to 1.0, default 0.75).",
+                min = 0, max = 1, step = 0.05, fmt = "%.2f",
+            },
+            {
+                kind = "slider",
+                key = "test_cameraTargetFocusInteractStrengthYaw",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Interact Focus Yaw Strength",
+                desc = "Horizontal camera turn fraction toward interacted NPC/object (0.0 to 1.0, default 1.0).",
+                min = 0, max = 1, step = 0.05, fmt = "%.2f",
+            },
+
+            { kind = "header", label = "Vertical Smoothing & Indirect Visibility" },
+            {
+                kind = "cycle",
+                key = "cameraZSmooth",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Vertical Smoothing (cameraZSmooth)",
+                desc = "Requires Reduce Unexpected Movement=1. Smooths vertical camera motion (0=Off, 1=Moving, 2=Always).",
+                options = {
+                    { value = "0", label = "Off (0)" },
+                    { value = "1", label = "Moving (1)" },
+                    { value = "2", label = "Always (2)" },
+                },
+            },
+            {
+                kind = "bool",
+                key = "cameraIndirectVisibility",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Indirect Visibility (Avoid Obstacles)",
+                desc = "Looks around intervening walls/pillars for a clear view before zooming the camera in.",
+            },
+            {
+                kind = "slider",
+                key = "cameraIndirectOffset",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Indirect Visibility Offset (yds)",
+                desc = "How far to the sides and above the character the camera checks for a clear view (default 6).",
+                min = 1, max = 15, step = 0.5, fmt = "%.1f",
+            },
+        },
+    },
+    {
         id = "combat",
         title = "Combat",
         items = {
@@ -414,6 +688,14 @@ CAS.Tabs = {
                 min = 10, max = 120, step = 5, fmt = "%d",
             },
             {
+                kind = "slider",
+                key = "maxFPSLoading",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Loading Screen Max FPS",
+                desc = "Caps loading screen redraws per second (10-100, default 10). Lower values load faster with many addons.",
+                min = 10, max = 100, step = 5, fmt = "%d",
+            },
+            {
                 kind = "api_slider",
                 key = "MaxAnimFramerate",
                 label = "Max Animation Framerate (Session)",
@@ -440,7 +722,14 @@ CAS.Tabs = {
                 desc = "Enables *CPUUsage functions for /profiler. Adds CPU overhead; disable after profiling.",
             },
 
-            { kind = "header", label = "Default Nameplate Alpha" },
+            { kind = "header", label = "Default Nameplate Appearance" },
+            {
+                kind = "bool",
+                key = "nameplateUseClassColorForFriendlyPlayerUnitNames",
+                minVersion = 12309, minVersionStr = "v1.23.9",
+                label = "Class-Color Friendly Player Nameplate Names",
+                desc = "Colors friendly player names on default nameplates by class color.",
+            },
             {
                 kind = "slider",
                 key = "nameplateSelectedAlpha",

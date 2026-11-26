@@ -48,8 +48,16 @@ local function PrintStatus()
     CAS.DetectMods()
     CAS.ScanOverlaps()
     local m = CAS.Mods
-    CAS.Print("Status:")
-    CAS.Print("  ClassicAPI: " .. (m.classicapi and ("|cff44ff44" .. m.classicapiVersion .. "|r") or "|cffff3333NOT LOADED|r"))
+    local capiStr
+    if not m.classicapi then
+        capiStr = "|cffff3333NOT LOADED (requires " .. CAS.TARGET_CLASSICAPI_STRING .. "+)|r"
+    elseif m.classicapiOutdated then
+        capiStr = "|cffffaa22" .. m.classicapiVersion .. " (OUTDATED - update to " .. CAS.TARGET_CLASSICAPI_STRING .. "+)|r"
+    else
+        capiStr = "|cff44ff44" .. m.classicapiVersion .. "|r"
+    end
+    CAS.Print("Status (Target: ClassicAPI " .. CAS.TARGET_CLASSICAPI_STRING .. "+):")
+    CAS.Print("  ClassicAPI: " .. capiStr)
     CAS.Print("  Nampower: " .. (m.nampower and m.nampowerVersion or "no")
         .. " | UnitXP SP3: " .. (m.unitxp and "yes" or "no")
         .. " | SuperWoW: " .. (m.superwow and m.superwowVersion or "no")
@@ -131,7 +139,12 @@ eventFrame:SetScript("OnEvent", function()
         CAS.UpdateMinimapButton()
         CAS.Trace("PLAYER_LOGIN complete.")
 
-        if ClassicAPISettingsDB.warnOnLogin then
+        -- Always warn on login if ClassicAPI is missing or older than v1.23.9
+        if not CAS.Mods.classicapi then
+            CAS.Print("|cffff3333WARNING:|r ClassicAPI.dll was NOT detected! Install ClassicAPI |cffffd200" .. CAS.TARGET_CLASSICAPI_STRING .. "+|r to use ClassicAPI Settings.")
+        elseif CAS.Mods.classicapiOutdated then
+            CAS.Print("|cffffaa22WARNING:|r ClassicAPI |cffffffff" .. tostring(CAS.Mods.classicapiVersion) .. "|r detected. Please update ClassicAPI.dll to |cffffd200" .. CAS.TARGET_CLASSICAPI_STRING .. "+|r! Settings marked |cffff6633[Req v1.23.9+]|r will not work on older builds.")
+        elseif ClassicAPISettingsDB.warnOnLogin then
             local high, warn = CAS.GetOverlapCounts()
             if high > 0 or warn > 0 then
                 CAS.Print(string.format("Found %d HIGH and %d WARN cross-mod overlap(s). Type |cffffd200/capi overlaps|r to review.", high, warn))
